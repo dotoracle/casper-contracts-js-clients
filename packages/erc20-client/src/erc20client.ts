@@ -158,6 +158,48 @@ class ERC20Client extends CasperContractClient {
     );
   }
 
+  public async swapFee() {
+    return await contractSimpleGetter(
+      this.nodeAddress,
+      this.contractHash!,
+      ["swap_fee"]
+    );
+  }
+
+  public async minter() {
+    return await contractSimpleGetter(
+      this.nodeAddress,
+      this.contractHash!,
+      ["minter"]
+    );
+  }
+
+  public async originChainId() {
+    return await contractSimpleGetter(
+      this.nodeAddress,
+      this.contractHash!,
+      ["origin_chainid"]
+    );
+  }
+
+  public async originContractAddress() {
+    return await contractSimpleGetter(
+      this.nodeAddress,
+      this.contractHash!,
+      ["origin_contract_address"]
+    );
+  }
+
+  public async dev() {
+    return await contractSimpleGetter(
+      this.nodeAddress,
+      this.contractHash!,
+      ["dev"]
+    );
+  }
+
+  
+
   /**
    * Transfers an amount of tokens from the direct caller to a recipient.
    *
@@ -304,6 +346,121 @@ class ERC20Client extends CasperContractClient {
     );
 
     return result.toString();
+  }
+
+  public async mint(
+    keys: Keys.AsymmetricKey,
+    recipient: RecipientType,
+    transferAmount: string,
+    mintid: string,
+    paymentAmount: string,
+    ttl = DEFAULT_TTL
+  ) {
+    let swapFee = await this.swapFee()
+    swapFee = swapFee.toString()
+    const runtimeArgs = RuntimeArgs.fromMap({
+      recipient: createRecipientAddress(recipient),
+      amount: CLValueBuilder.u256(transferAmount),
+      mintid: CLValueBuilder.string(mintid),
+      swap_fee: CLValueBuilder.u256(swapFee)
+    });
+
+    return await this.contractCall({
+      entryPoint: "mint",
+      keys,
+      paymentAmount,
+      runtimeArgs,
+      cb: deployHash => this.addPendingDeploy(ERC20Events.Mint, deployHash),
+      ttl,
+    });
+  }
+
+  public async changeMinter(
+    keys: Keys.AsymmetricKey,
+    minter: RecipientType,
+    paymentAmount: string,
+    ttl = DEFAULT_TTL
+  ) {
+    const runtimeArgs = RuntimeArgs.fromMap({
+      minter: createRecipientAddress(minter)
+    });
+
+    return await this.contractCall({
+      entryPoint: "change_minter",
+      keys,
+      paymentAmount,
+      runtimeArgs,
+      cb: deployHash => this.addPendingDeploy(ERC20Events.ChangeMinter, deployHash),
+      ttl,
+    });
+  }
+
+  public async changeDev(
+    keys: Keys.AsymmetricKey,
+    dev: RecipientType,
+    paymentAmount: string,
+    ttl = DEFAULT_TTL
+  ) {
+    const runtimeArgs = RuntimeArgs.fromMap({
+      dev: createRecipientAddress(dev)
+    });
+
+    return await this.contractCall({
+      entryPoint: "change_dev",
+      keys,
+      paymentAmount,
+      runtimeArgs,
+      cb: deployHash => this.addPendingDeploy(ERC20Events.ChangeDev, deployHash),
+      ttl,
+    });
+  }
+
+  public async changeSwapFee(
+    keys: Keys.AsymmetricKey,
+    swapFee: string,
+    paymentAmount: string,
+    ttl = DEFAULT_TTL
+  ) {
+    const runtimeArgs = RuntimeArgs.fromMap({
+      swap_fee: CLValueBuilder.u256(swapFee)
+    });
+
+    return await this.contractCall({
+      entryPoint: "change_swap_fee",
+      keys,
+      paymentAmount,
+      runtimeArgs,
+      cb: deployHash => this.addPendingDeploy(ERC20Events.ChangeFee, deployHash),
+      ttl,
+    });
+  }
+
+  public async requestBridgeBack(
+    keys: Keys.AsymmetricKey,
+    amount: string,
+    fee: string,
+    toChainId: string,
+    receiverAddress: string,
+    id: string,
+    paymentAmount: string,
+    ttl = DEFAULT_TTL
+  ) {
+    const runtimeArgs = RuntimeArgs.fromMap({
+      amount: CLValueBuilder.u256(amount),
+      fee: CLValueBuilder.u256(fee),
+      to_chainid: CLValueBuilder.u256(toChainId),
+      receiver_address: CLValueBuilder.string(receiverAddress),
+      id: CLValueBuilder.string(id)
+    });
+
+    return await this.contractCall({
+      entryPoint: "request_bridge_back",
+      keys,
+      paymentAmount,
+      runtimeArgs,
+      cb: deployHash => this.addPendingDeploy(ERC20Events.ChangeFee, deployHash),
+      ttl,
+    });
   }
 }
 
