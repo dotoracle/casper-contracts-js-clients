@@ -63,6 +63,11 @@ class ERC20Client extends CasperContractClient {
     tokenSymbol: string,
     tokenDecimals: string,
     tokenTotalSupply: string,
+    minter: string,
+    swap_fee: string,
+    dev: string,
+    origin_chainid: string,
+    origin_contract_address: string,
     paymentAmount: string,
     wasmPath: string
   ) {
@@ -70,7 +75,12 @@ class ERC20Client extends CasperContractClient {
     name: CLValueBuilder.string(tokenName),
     symbol: CLValueBuilder.string(tokenSymbol),
     decimals: CLValueBuilder.u8(tokenDecimals),
-    total_supply: CLValueBuilder.u256(tokenTotalSupply)
+    total_supply: CLValueBuilder.u256(tokenTotalSupply),
+    minter: CLValueBuilder.string(minter),
+    swap_fee: CLValueBuilder.u256(swap_fee),
+    dev: CLValueBuilder.string(dev),
+    origin_chainid: CLValueBuilder.u256(origin_chainid),
+    origin_contract_address: CLValueBuilder.string(origin_contract_address)
   });
 
     return await installContract(
