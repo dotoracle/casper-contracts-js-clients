@@ -30,11 +30,12 @@ const KEYS = Keys.Secp256K1.parseKeyFiles(
   `${MASTER_KEY_PAIR_PATH}/secret_key.pem`,
 )
 
-const minter = KEYS.publicKey.toAccountHashStr()
-const swap_fee = '0'
+const minter =
+  'account-hash-69b994ec6f871de00f099de1f7bcfca61bec1a1699d85ec50e7b883965bbc485'
+const swap_fee = '100000000000000000'
 const dev = minter
-const origin_chainid = '1'
-const origin_contract_address = 'origin contract address'
+const origin_chainid = '97'
+const origin_contract_address = '0x51c87aBA0AD711331bB4d09AE314a10E93aaa7eb'
 
 const test = async () => {
   const erc20 = new ERC20Client(
@@ -45,10 +46,10 @@ const test = async () => {
 
   const installDeployHash = await erc20.install(
     KEYS,
-    TOKEN_NAME!,
-    TOKEN_SYMBOL!,
-    TOKEN_DECIMALS!,
-    TOKEN_SUPPLY!,
+    "ERC20Mock Wrapped (Casper Testnet)",
+    "dERC20Mock",
+    "18",
+    "0",
     minter,
     swap_fee,
     dev,

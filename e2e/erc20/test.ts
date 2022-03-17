@@ -1,17 +1,18 @@
-import { config } from 'dotenv'
-config({ path: './.env.erc20' })
+import { config } from "dotenv";
+config({ path: "./.env.erc20" });
 
-import { ERC20Client } from 'casper-erc20-js-client'
-import { utils } from 'casper-js-client-helper'
-import { sleep, getDeploy } from '../utils'
-import { BigNumber } from 'bignumber.js'
+import { ERC20Client } from "casper-erc20-js-client";
+import { utils } from "casper-js-client-helper";
+import { sleep, getDeploy } from "../utils";
+import { BigNumber } from "bignumber.js";
 import {
   CLValueBuilder,
   Keys,
   CLPublicKey,
   CLPublicKeyType,
   CLAccountHash,
-} from 'casper-js-sdk'
+  CasperServiceByJsonRPC
+} from "casper-js-sdk";
 
 const {
   NODE_ADDRESS,
@@ -24,72 +25,93 @@ const {
   TOKEN_DECIMALS,
   TOKEN_SUPPLY,
   INSTALL_PAYMENT_AMOUNT,
-} = process.env
+} = process.env;
 
 const KEYS = Keys.Secp256K1.parseKeyFiles(
   `${MASTER_KEY_PAIR_PATH}/public_key.pem`,
-  `${MASTER_KEY_PAIR_PATH}/secret_key.pem`,
-)
+  `${MASTER_KEY_PAIR_PATH}/secret_key.pem`
+);
 
 let recipientAccountHash =
-  'account-hash-a94abced000c70beb0478b8cb8aebb4d683bc00d2868585c7e24f7f02084ea60'
+  "account-hash-fa12d2dd5547714f8c2754d418aa8c9d59dc88780350cb4254d622e2d4ef7e69";
 
-const minter = KEYS.publicKey.toAccountHashStr()
+const minter = KEYS.publicKey.toAccountHashStr();
+console.log("my account has", minter);
 
 function toToken(n: string, decimals: string) {
   return new BigNumber(n.toString())
     .dividedBy(new BigNumber(10).pow(new BigNumber(decimals.toString())))
-    .toString()
+    .toString();
 }
 
 function toContractUnit(n: string, decimals: string) {
   return new BigNumber(n.toString())
     .multipliedBy(new BigNumber(10).pow(new BigNumber(decimals.toString())))
-    .toFixed(0)
+    .toFixed(0);
 }
 
 const test = async () => {
   const erc20 = new ERC20Client(
     NODE_ADDRESS!,
     CHAIN_NAME!,
-    EVENT_STREAM_ADDRESS!,
-  )
+    EVENT_STREAM_ADDRESS!
+  );
+
+  const client = new CasperServiceByJsonRPC(NODE_ADDRESS!);
 
   await erc20.setContractHash(
-    'hash-90971834805286b054b5c3665d60d752ab494610efdf909fb1c8b6aa4e113368'.slice(
-      5,
-    ),
-  )
-  let recipientAccountHashByte = Uint8Array.from(Buffer.from(recipientAccountHash.slice(13), 'hex'))
+    "hash-70ef507ab53f933f802ff95ca6fca441967fde634d99eec6c6991730c504214b".slice(
+      5
+    )
+  );
+  let recipientAccountHashByte = Uint8Array.from(
+    Buffer.from(recipientAccountHash.slice(13), "hex")
+  );
 
-  const name = await erc20.name()
-  console.log(`... Contract name: ${name}`)
+  const name = await erc20.name();
+  console.log(`... Contract name: ${name}`);
 
-  const symbol = await erc20.symbol()
-  console.log(`... Contract symbol: ${symbol}`)
+  const symbol = await erc20.symbol();
+  console.log(`... Contract symbol: ${symbol}`);
 
-  let decimals = await erc20.decimals()
-  console.log(`... Decimals: ${decimals}`)
+  let decimals = await erc20.decimals();
+  console.log(`... Decimals: ${decimals}`);
 
-  let totalSupply = await erc20.totalSupply()
-  console.log(`... Total supply: ${toToken(totalSupply, decimals)}`)
-  const balance = await erc20.balanceOf(new CLAccountHash(KEYS.publicKey.toAccountHash()))
-  console.log(`Balance of ${KEYS.publicKey.toHex()}: ${toToken(balance, decimals)}`)
+  let totalSupply = await erc20.totalSupply();
+  console.log(`... Total supply: ${toToken(totalSupply, decimals)}`);
 
-  const balance1 = await erc20.balanceOf(new CLAccountHash(recipientAccountHashByte))
-  console.log(`Balance of ${recipientAccountHash}: ${balance1}`)
+  // try {
+  //   const balance = await erc20.balanceOf(
+  //     new CLAccountHash(recipientAccountHashByte),
+  //   )
+  //   console.log(
+  //     `Balance of ${recipientAccountHash}: ${toToken(balance, decimals)}`,
+  //   )
+  // } catch (e) {
+  //   console.log('errorrrr', e)
+  // }
 
+  // const balance1 = await erc20.balanceOf(
+  //   new CLAccountHash(recipientAccountHashByte),
+  // )
+  // console.log(`Balance of ${recipientAccountHash}: ${balance1}`)
+  try {
+    console.log("redaing");
+    const deploy = await client.getDeployInfo("0xe9eac065dc9f8835c3426bc23d249ffb1b5a68db4eed76385aa1dab773bff451");
+    console.log("deploy", deploy);
+  } catch (e) {
+    console.log("e", e);
+  }
   //transfer
   {
-    const deployHash = await erc20.transfer(KEYS, new CLAccountHash(recipientAccountHashByte), totalSupply + '100', '2000000000')
-    getDeploy(NODE_ADDRESS!, deployHash)
+    // const deployHash = await erc20.transfer(KEYS, new CLAccountHash(recipientAccountHashByte), '100', '2000000000')
+    // getDeploy(NODE_ADDRESS!, deployHash)
   }
 
   //mint
   {
     // let deployHash = await erc20.mint(KEYS, new CLAccountHash(recipientAccountHashByte), '10000', 'mint1', '2000000000')
     // await getDeploy(NODE_ADDRESS!, deployHash)
-
     // deployHash = await erc20.mint(KEYS, new CLAccountHash(recipientAccountHashByte), '10000', 'mint2', '2000000000')
     // await getDeploy(NODE_ADDRESS!, deployHash)
   }
@@ -168,6 +190,7 @@ const test = async () => {
   // await Promise.all(deployHashes.map((hash) => getDeploy(NODE_ADDRESS!, hash)))
   // console.log('All deploys succeded')
   // deployHashes = []
-}
+  console.log("done");
+};
 
-test()
+test();

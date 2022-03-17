@@ -16,7 +16,9 @@
     "e2e:cep47:usage": "ts-node ./e2e/cep47/usage.ts",
     "e2e:erc20:install": "ts-node ./e2e/erc20/install.ts",
     "e2e:erc20:installed": "ts-node ./e2e/erc20/installed.ts",
-    "e2e:erc20:test": "ts-node ./e2e/erc20/test.ts"
+    "e2e:erc20:test": "ts-node ./e2e/erc20/test.ts",
+    "e2e:erc20:request": "ts-node ./e2e/erc20/request.ts",
+    "e2e:erc20:scan": "ts-node ./e2e/erc20/scan.ts"
   },
   "keywords": [],
   "author": "Jan Hoffmann <jan@casperlabs.io>",
@@ -27,6 +29,7 @@
     "casper-erc20-js-client": "file:./packages/erc20-client",
     "casper-js-client-helper": "file:./packages/client-helper",
     "casper-js-sdk": "2.8.0",
+    "config": "^3.3.7",
     "ts-node": "^10.2.1"
   }
 }
